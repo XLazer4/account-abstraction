@@ -4,6 +4,35 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+interface IAave {
+    function supply(
+        address asset,
+        uint256 amount,
+        address onBehalfOf,
+        uint16 referralCode
+    ) external;
+
+    function withdraw(address asset, uint256 amount, address to) external;
+}
+
+interface IGains {
+    function deposit(uint256 assets, address receiver) external;
+
+    function convertToShares(uint256 assets) external;
+
+    function makeWithdrawRequest(uint256 shares, address owner) external;
+}
+
+interface IGainsEpoch {
+    function forceNewEpoch() external;
+}
+
+interface IPrimeX {
+    function deposit(address _for, uint256 _pid, uint256 _amount) external;
+
+    function withdraw(address token, uint256 amount) external;
+}
+
 contract InvestmentVault is Ownable {
     struct Investor {
         uint256 balance;
