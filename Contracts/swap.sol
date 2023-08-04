@@ -65,19 +65,24 @@ contract TokenSwap is Ownable {
         IERC20WithDecimals fromToken = IERC20WithDecimals(fromTokenAddress);
         IERC20WithDecimals toToken = IERC20WithDecimals(toTokenAddress);
 
-        if (!fromToken.transferFrom(msg.sender, address(this), amount))
-            revert TransferFailed(fromTokenAddress);
-
         uint256 fromTokenDecimals = fromToken.decimals();
         uint256 toTokenDecimals = toToken.decimals();
+        uint256 realAmount = amount * (10 ** fromTokenDecimals);
+
+        if (!fromToken.transferFrom(msg.sender, address(this), realAmount))
+            revert TransferFailed(fromTokenAddress);
 
         if (fromTokenDecimals > toTokenDecimals) {
-            amount = amount / (10 ** (fromTokenDecimals - toTokenDecimals));
+            realAmount =
+                realAmount /
+                (10 ** (fromTokenDecimals - toTokenDecimals));
         } else if (toTokenDecimals > fromTokenDecimals) {
-            amount = amount * (10 ** (toTokenDecimals - fromTokenDecimals));
+            realAmount =
+                realAmount *
+                (10 ** (toTokenDecimals - fromTokenDecimals));
         }
 
-        if (!toToken.transfer(msg.sender, amount))
+        if (!toToken.transfer(msg.sender, realAmount))
             revert TransferFailed(toTokenAddress);
     }
 }
