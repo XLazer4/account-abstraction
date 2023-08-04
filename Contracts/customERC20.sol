@@ -23,4 +23,8 @@ contract CustomERC20 is ERC20, Ownable {
     function decimals() public view virtual override returns (uint8) {
         return _decimals;
     }
+
+    function realBalanceOf(address _addr) public view returns (uint256) {
+        return balanceOf(_addr) / 10 ** decimals();
+    }
 }
