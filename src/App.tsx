@@ -119,10 +119,7 @@ export default function Home() {
 
   return (
     <div>
-      <h1>
-        {" "}
-        Biconomy Smart Accounts using social login + Gasless Transactions
-      </h1>
+      <h1> Account Abstraction </h1>
 
       {!smartAccount && !loading && <button onClick={login}>Login</button>}
       {loading && <p>Loading account details...</p>}
@@ -134,16 +131,6 @@ export default function Home() {
           <button onClick={logout}>Logout</button>
         </div>
       )}
-      <p>
-        Edit <code>src/App.tsx</code> and save to test
-      </p>
-      <a
-        href="https://docs.biconomy.io/docs/overview"
-        target="_blank"
-        className="read-the-docs"
-      >
-        Click here to check out the docs
-      </a>
     </div>
   );
 }
