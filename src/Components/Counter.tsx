@@ -34,8 +34,8 @@ const Counter: React.FC<Props> = ({ smartAccount, provider }) => {
   const getBalance = async (isUpdating: boolean) => {
     const contract = new ethers.Contract(balanceAddress, abi, provider);
     setBalanceContract(contract);
-    const ownerAddress = "0x204E7F44b9f6cB9784c865D14a4773d79BF605c4";
-    const currentBalance = await contract.balanceOf(ownerAddress);
+    let smartAccountAddress = await smartAccount.getSmartAccountAddress();
+    const currentBalance = await contract.balanceOf(smartAccountAddress);
     const currentBalanceInEther = ethers.utils.formatEther(currentBalance);
     setBalance(parseFloat(currentBalanceInEther));
     if (isUpdating) {
