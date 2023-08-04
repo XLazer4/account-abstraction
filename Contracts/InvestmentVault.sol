@@ -40,17 +40,30 @@ contract InvestmentVault is Ownable {
         mapping(address => bool) vaultManagers;
     }
 
-    mapping(address => Investor) public investors;
-
     IERC20 public investmentToken;
+    IAave public aave;
+    IGains public gains;
+    IGainsEpoch public gainsEpoch;
+    IPrimeX public primex;
+    mapping(address => Investor) public investors;
 
     error UnauthorizedVaultManager();
     error ExceedsInvestorLimit();
     error InsufficientInvestorBalance();
     error TokenTransferFailed();
 
-    constructor(IERC20 _investmentToken) {
+    constructor(
+        IERC20 _investmentToken,
+        address _aave,
+        address _gains,
+        address _gainsEpoch,
+        address _primex
+    ) {
         investmentToken = _investmentToken;
+        aave = IAave(_aave);
+        gains = IGains(_gains);
+        gainsEpoch = IGainsEpoch(_gainsEpoch);
+        primex = IPrimeX(_primex);
     }
 
     function deposit(uint256 _amount) public {
