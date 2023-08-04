@@ -52,84 +52,89 @@ const Counter: React.FC<Props> = ({ smartAccount, provider }) => {
     }
   };
 
-  // const incrementCount = async () => {
-  //   try {
-  //     toast.info("Processing count on the blockchain!", {
-  //       position: "top-right",
-  //       autoClose: 5000,
-  //       hideProgressBar: false,
-  //       closeOnClick: true,
-  //       pauseOnHover: true,
-  //       draggable: true,
-  //       progress: undefined,
-  //       theme: "dark",
-  //     });
+  const transfer = async () => {
+    try {
+      toast.info("Processing transfer on the blockchain!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
 
-  //     const incrementTx = new ethers.utils.Interface([
-  //       "function incrementCount()",
-  //     ]);
-  //     const data = incrementTx.encodeFunctionData("incrementCount");
+      const transferTx = new ethers.utils.Interface([
+        "function transfer(address _to, uint256 _value)",
+      ]);
+      const receiverAddress = "0x204E7F44b9f6cB9784c865D14a4773d79BF605c4";
+      const amountToTransfer = ethers.utils.parseEther("1");
+      const data = transferTx.encodeFunctionData("transfer", [
+        receiverAddress,
+        amountToTransfer,
+      ]);
 
-  //     const tx1 = {
-  //       to: counterAddress,
-  //       data: data,
-  //     };
+      const tx1 = {
+        to: balanceAddress,
+        data: data,
+      };
 
-  //     let partialUserOp = await smartAccount.buildUserOp([tx1]);
+      let partialUserOp = await smartAccount.buildUserOp([tx1]);
 
-  //     const biconomyPaymaster =
-  //       smartAccount.paymaster as IHybridPaymaster<SponsorUserOperationDto>;
+      const biconomyPaymaster =
+        smartAccount.paymaster as IHybridPaymaster<SponsorUserOperationDto>;
 
-  //     let paymasterServiceData: SponsorUserOperationDto = {
-  //       mode: PaymasterMode.SPONSORED,
-  //       // optional params...
-  //     };
+      let paymasterServiceData: SponsorUserOperationDto = {
+        mode: PaymasterMode.SPONSORED,
+        // optional params...
+      };
 
-  //     try {
-  //       const paymasterAndDataResponse =
-  //         await biconomyPaymaster.getPaymasterAndData(
-  //           partialUserOp,
-  //           paymasterServiceData
-  //         );
-  //       partialUserOp.paymasterAndData =
-  //         paymasterAndDataResponse.paymasterAndData;
+      try {
+        const paymasterAndDataResponse =
+          await biconomyPaymaster.getPaymasterAndData(
+            partialUserOp,
+            paymasterServiceData
+          );
+        partialUserOp.paymasterAndData =
+          paymasterAndDataResponse.paymasterAndData;
 
-  //       const userOpResponse = await smartAccount.sendUserOp(partialUserOp);
-  //       const transactionDetails = await userOpResponse.wait();
+        const userOpResponse = await smartAccount.sendUserOp(partialUserOp);
+        const transactionDetails = await userOpResponse.wait();
 
-  //       console.log("Transaction Details:", transactionDetails);
-  //       console.log("Transaction Hash:", userOpResponse.userOpHash);
+        console.log("Transaction Details:", transactionDetails);
+        console.log("Transaction Hash:", userOpResponse.userOpHash);
 
-  //       toast.success(`Transaction Hash: ${userOpResponse.userOpHash}`, {
-  //         position: "top-right",
-  //         autoClose: 5000,
-  //         hideProgressBar: false,
-  //         closeOnClick: true,
-  //         pauseOnHover: true,
-  //         draggable: true,
-  //         progress: undefined,
-  //         theme: "dark",
-  //       });
+        toast.success(`Transaction Hash: ${userOpResponse.userOpHash}`, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        });
 
-  //       getCount(true);
-  //     } catch (e) {
-  //       console.error("Error executing transaction:", e);
-  //       // ... handle the error if needed ...
-  //     }
-  //   } catch (error) {
-  //     console.error("Error executing transaction:", error);
-  //     toast.error("Error occurred, check the console", {
-  //       position: "top-right",
-  //       autoClose: 5000,
-  //       hideProgressBar: false,
-  //       closeOnClick: true,
-  //       pauseOnHover: true,
-  //       draggable: true,
-  //       progress: undefined,
-  //       theme: "dark",
-  //     });
-  //   }
-  // };
+        getBalance(true);
+      } catch (e) {
+        console.error("Error executing transaction:", e);
+        // ... handle the error if needed ...
+      }
+    } catch (error) {
+      console.error("Error executing transaction:", error);
+      toast.error("Error occurred, check the console", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    }
+  };
 
   return (
     <>
@@ -147,7 +152,7 @@ const Counter: React.FC<Props> = ({ smartAccount, provider }) => {
         theme="dark"
       />
       <br></br>
-      {/* <button onClick={() => incrementCount()}>Increment Count</button> */}
+      <button onClick={() => transfer()}>Transfer Token</button>
     </>
   );
 };
