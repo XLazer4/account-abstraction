@@ -5,7 +5,8 @@ import {
   SponsorUserOperationDto,
   PaymasterMode,
 } from "@biconomy/paymaster";
-import abi from "../utils/counterAbi.json";
+import vaultABI from "../utils/vaultABI.json";
+import tokenABI from "../utils/tokenABI.json";
 import { ethers } from "ethers";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -24,7 +25,8 @@ const Counter: React.FC<Props> = ({ smartAccount, provider }) => {
   const [balanceContract, setBalanceContract] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const balanceAddress = "0x326C977E6efc84E512bB9C30f76E30c160eD06FB";
+  const investmentVault = "0x41f4DAfA850a8FbB3743f157f4dc7858E483c10A";
+  const DAI = "0x04B2A6E51272c82932ecaB31A5Ab5aC32AE168C3";
 
   useEffect(() => {
     setIsLoading(true);
@@ -32,7 +34,7 @@ const Counter: React.FC<Props> = ({ smartAccount, provider }) => {
   }, []);
 
   const getBalance = async (isUpdating: boolean) => {
-    const contract = new ethers.Contract(balanceAddress, abi, provider);
+    const token = new ethers.Contract(DAI, abi, provider);
     setBalanceContract(contract);
     let smartAccountAddress = await smartAccount.getSmartAccountAddress();
     const currentBalance = await contract.balanceOf(smartAccountAddress);
@@ -76,7 +78,7 @@ const Counter: React.FC<Props> = ({ smartAccount, provider }) => {
       ]);
 
       const tx1 = {
-        to: balanceAddress,
+        to: investmentVault,
         data: data,
       };
 
