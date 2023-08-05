@@ -46,7 +46,7 @@ interface IPrimex {
 contract InvestmentVault is Ownable {
     struct Investor {
         uint256 amountAllowed;
-        mapping(address => uint256) balances;
+        // mapping(address => uint256) balances;
         mapping(address => bool) vaultManagers;
     }
 
@@ -106,7 +106,7 @@ contract InvestmentVault is Ownable {
             revert TokenTransferFailed();
         }
 
-        investors[msg.sender].balances[tokenAddress] += _amount;
+        // investors[msg.sender].balances[tokenAddress] += _amount;
     }
 
     function withdraw(address tokenAddress, uint256 _amount) public {
@@ -118,11 +118,11 @@ contract InvestmentVault is Ownable {
             revert InvalidToken();
         }
 
-        if (investors[msg.sender].balances[tokenAddress] < _amount) {
-            revert InsufficientInvestorBalance();
-        }
+        // if (investors[msg.sender].balances[tokenAddress] < _amount) {
+        //     revert InsufficientInvestorBalance();
+        // }
 
-        investors[msg.sender].balances[tokenAddress] -= _amount;
+        // investors[msg.sender].balances[tokenAddress] -= _amount;
 
         if (!IERC20(tokenAddress).transfer(msg.sender, _amount)) {
             revert TokenTransferFailed();
