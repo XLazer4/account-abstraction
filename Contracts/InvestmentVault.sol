@@ -42,14 +42,16 @@ contract InvestmentVault is Ownable {
         mapping(address => bool) vaultManagers;
     }
 
-    IERC20 constant DAI = "0x04B2A6E51272c82932ecaB31A5Ab5aC32AE168C3";
-    IERC20 constant USDT = "0xAcDe43b9E5f72a4F554D4346e69e8e7AC8F352f0";
-    IERC20 constant USDC = "0x19D66Abd20Fb2a0Fc046C139d5af1e97F09A695e";
+    IERC20 constant DAI = IERC20(0x04B2A6E51272c82932ecaB31A5Ab5aC32AE168C3);
+    IERC20 constant USDT = IERC20(0xAcDe43b9E5f72a4F554D4346e69e8e7AC8F352f0);
+    IERC20 constant USDC = IERC20(0x19D66Abd20Fb2a0Fc046C139d5af1e97F09A695e);
+    IAave constant aave = IAave(0x0b913A76beFF3887d35073b8e5530755D60F78C7);
+    IGains constant gains = IGains(0x5215C8B3e76D493c8bcb9A7352F7afe18A6bb091);
+    IGainsEpoch constant gainsEpoch =
+        IGainsEpoch(0xa7c829cb2346e12dc49fd5ea8002abaf48e9396c);
+    IPrimex constant primex =
+        IPrimex(0x30a676Cfde63e855Ab072269808eD192736cb46D);
 
-    IAave public aave;
-    IGains public gains;
-    IGainsEpoch public gainsEpoch;
-    IPrimex public primex;
     mapping(address => Investor) public investors;
 
     enum ActionType {
@@ -68,19 +70,7 @@ contract InvestmentVault is Ownable {
     error UnauthorizedVaultManager();
     error ExceedsInvestorLimit();
     error InsufficientInvestorBalance();
-    error TokenTransferFailed()
-
-    constructor(
-        address _aave,
-        address _gains,
-        address _gainsEpoch,
-        address _primex
-    ) {
-        aave = IAave(_aave);
-        gains = IGains(_gains);
-        gainsEpoch = IGainsEpoch(_gainsEpoch);
-        primex = IPrimex(_primex);
-    }
+    error TokenTransferFailed();
 
     function deposit(address tokenAddress, uint256 _amount) public {
         IERC20 token;
