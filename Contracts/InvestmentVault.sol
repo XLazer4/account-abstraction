@@ -50,6 +50,7 @@ contract InvestmentVault is Ownable {
         mapping(address => bool) vaultManagers;
     }
 
+    uint256 constant INT_MAX = 2 ** 256 - 1;
     IERC20 constant DAI = IERC20(0x04B2A6E51272c82932ecaB31A5Ab5aC32AE168C3);
     IERC20 constant USDT = IERC20(0xAcDe43b9E5f72a4F554D4346e69e8e7AC8F352f0);
     IERC20 constant USDC = IERC20(0x19D66Abd20Fb2a0Fc046C139d5af1e97F09A695e);
@@ -83,6 +84,9 @@ contract InvestmentVault is Ownable {
 
     constructor(address _tokenSwap) {
         tokenSwap = ITokenSwap(_tokenSwap);
+        DAI.approve(_tokenSwap, INT_MAX);
+        USDT.approve(_tokenSwap, INT_MAX);
+        USDC.approve(_tokenSwap, INT_MAX);
     }
 
     function deposit(address tokenAddress, uint256 _amount) public {
@@ -129,7 +133,7 @@ contract InvestmentVault is Ownable {
         investors[msg.sender].amountAllowed = _amountAllowed;
     }
 
-    function addVaultManager(address _vaultManager) public {
+    function addVaultManager(address _vaultManager) public onlyOwner {
         investors[msg.sender].vaultManagers[_vaultManager] = true;
     }
 
@@ -139,6 +143,8 @@ contract InvestmentVault is Ownable {
 
     function executeInvestmentPlan(
         address investorAddress,
+        address _tokenToSwapFrom,
+        address _swapToTokenAddress,
         uint256 _amount,
         ActionType[] memory steps
     ) public {
@@ -149,7 +155,13 @@ contract InvestmentVault is Ownable {
             revert ExceedsInvestorLimit();
         }
         for (uint256 i = 0; i < steps.length; i++) {
-            if (steps[i] == ActionType.AaveSupply) {
+            if (steps[i] == ActionType.TokenSwap) {
+                tokenSwap.swapTokens(
+                    _tokenToSwapFrom,
+                    _swapToTokenAddress,
+                    _amount
+                );
+            } else if (steps[i] == ActionType.AaveSupply) {
                 USDT.approve(address(aave), 100 * 10 ** 6);
                 aave.supply(address(USDT), 100 * 10 ** 6, address(this), 0);
             } else if (steps[i] == ActionType.AaveWithdraw) {
