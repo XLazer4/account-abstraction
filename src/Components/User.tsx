@@ -20,10 +20,11 @@ const TotalCountDisplay: React.FC<{ count: number }> = ({ count }) => {
   return <div>DAI Balance is {count}</div>;
 };
 
-const Counter: React.FC<Props> = ({ smartAccount, provider }) => {
+const User: React.FC<Props> = ({ smartAccount, provider }) => {
   const [balance, setBalance] = useState<number>(0);
   const [balanceContract, setBalanceContract] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [depositAmount, setDepositAmount] = useState<string>("0");
 
   const investmentVault = "0x41f4DAfA850a8FbB3743f157f4dc7858E483c10A";
   const DAI = "0x04B2A6E51272c82932ecaB31A5Ab5aC32AE168C3";
@@ -54,9 +55,9 @@ const Counter: React.FC<Props> = ({ smartAccount, provider }) => {
     }
   };
 
-  const transfer = async () => {
+  const deposit = async () => {
     try {
-      toast.info("Processing transfer on the blockchain!", {
+      toast.info("Processing deposit on the blockchain!", {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -67,22 +68,36 @@ const Counter: React.FC<Props> = ({ smartAccount, provider }) => {
         theme: "dark",
       });
 
-      const transferTx = new ethers.utils.Interface([
-        "function transfer(address _to, uint256 _value)",
+      const approveTxInterface = new ethers.utils.Interface([
+        "function approve(address spender, uint256 value)",
       ]);
-      const receiverAddress = "0x204E7F44b9f6cB9784c865D14a4773d79BF605c4";
-      const amountToTransfer = ethers.utils.parseEther("1");
-      const data = transferTx.encodeFunctionData("transfer", [
-        receiverAddress,
-        amountToTransfer,
+      const approveData = approveTxInterface.encodeFunctionData("approve", [
+        investmentVault,
+        ethers.utils.parseEther(depositAmount),
       ]);
 
-      const tx1 = {
-        to: investmentVault,
-        data: data,
+      const approveTx = {
+        to: DAI,
+        data: approveData,
       };
 
-      let partialUserOp = await smartAccount.buildUserOp([tx1]);
+      const depositTxInterface = new ethers.utils.Interface([
+        "function deposit(address tokenAddress, uint256 _amount)",
+      ]);
+      const depositData = depositTxInterface.encodeFunctionData("deposit", [
+        DAI,
+        ethers.utils.parseEther(depositAmount),
+      ]);
+
+      const depositTx = {
+        to: investmentVault,
+        data: depositData,
+      };
+
+      let partialUserOp = await smartAccount.buildUserOp([
+        approveTx,
+        depositTx,
+      ]);
 
       const biconomyPaymaster =
         smartAccount.paymaster as IHybridPaymaster<SponsorUserOperationDto>;
@@ -153,10 +168,16 @@ const Counter: React.FC<Props> = ({ smartAccount, provider }) => {
         pauseOnHover
         theme="dark"
       />
+      <input
+        type="number"
+        value={depositAmount}
+        onChange={(e) => setDepositAmount(e.target.value)}
+        placeholder="Enter deposit amount"
+      />
       <br></br>
-      <button onClick={() => transfer()}>Transfer Token</button>
+      <button onClick={() => deposit()}>Deposit Token</button>
     </>
   );
 };
 
-export default Counter;
+export default User;
