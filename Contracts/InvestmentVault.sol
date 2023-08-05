@@ -70,8 +70,8 @@ contract InvestmentVault is Ownable {
         AaveWithdraw,
         GainsDeposit,
         GainsWithdrawRequest,
-        GainsRedeem,
         GainsEpochForceNewEpoch,
+        GainsRedeem,
         PrimexDeposit,
         PrimexWithdraw
     }
@@ -137,7 +137,7 @@ contract InvestmentVault is Ownable {
         investors[msg.sender].vaultManagers[_vaultManager] = true;
     }
 
-    function removeVaultManager(address _vaultManager) public {
+    function removeVaultManager(address _vaultManager) public onlyOwner {
         investors[msg.sender].vaultManagers[_vaultManager] = false;
     }
 
@@ -172,13 +172,13 @@ contract InvestmentVault is Ownable {
             } else if (steps[i] == ActionType.GainsWithdrawRequest) {
                 uint256 gainsTokenBalance = gains.balanceOf(address(this));
                 gains.makeWithdrawRequest(gainsTokenBalance, address(this));
+            } else if (steps[i] == ActionType.GainsEpochForceNewEpoch) {
+                gainsEpoch.forceNewEpoch();
             } else if (steps[i] == ActionType.GainsRedeem) {
                 uint256 gainsTokenBalance = gains.balanceOf(address(this));
                 gains.redeem(gainsTokenBalance, address(this), address(this));
-            } else if (steps[i] == ActionType.GainsEpochForceNewEpoch) {
-                gainsEpoch.forceNewEpoch();
             } else if (steps[i] == ActionType.PrimexDeposit) {
-                USDC.approve(address(aave), 100 * 10 ** 6);
+                USDC.approve(address(primex), 100 * 10 ** 6);
                 primex.deposit(address(this), 100 * 10 ** 6, 0);
             } else if (steps[i] == ActionType.PrimexWithdraw) {
                 primex.withdraw(address(this), 100 * 10 ** 6);
