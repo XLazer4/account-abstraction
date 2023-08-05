@@ -26,7 +26,7 @@ interface IAave {
 interface IGains {
     function deposit(uint256 assets, address receiver) external;
 
-    function convertToShares(uint256 assets) external;
+    function balanceOf(address account) external returns (uint256);
 
     function makeWithdrawRequest(uint256 shares, address owner) external;
 
@@ -57,17 +57,17 @@ contract InvestmentVault is Ownable {
     IAave constant aave = IAave(0x0b913A76beFF3887d35073b8e5530755D60F78C7);
     IGains constant gains = IGains(0x5215C8B3e76D493c8bcb9A7352F7afe18A6bb091);
     IGainsEpoch constant gainsEpoch =
-        IGainsEpoch(0xa7c829cb2346e12dc49fd5ea8002abaf48e9396c);
+        IGainsEpoch(0xA7C829CB2346E12DC49Fd5ea8002Abaf48E9396C);
     IPrimex constant primex =
         IPrimex(0x30a676Cfde63e855Ab072269808eD192736cb46D);
 
     mapping(address => Investor) public investors;
 
     enum ActionType {
+        TokenSwap,
         AaveSupply,
         AaveWithdraw,
         GainsDeposit,
-        GainsConvertToShares,
         GainsWithdrawRequest,
         GainsRedeem,
         GainsEpochForceNewEpoch,
@@ -150,32 +150,23 @@ contract InvestmentVault is Ownable {
         }
         for (uint256 i = 0; i < steps.length; i++) {
             if (steps[i] == ActionType.AaveSupply) {
-                aave.supply(
-                    address(investmentToken),
-                    1000 /*amount*/,
-                    address(this),
-                    0
-                );
+                aave.supply(address(USDT), 1000 /*amount*/, address(this), 0);
             } else if (steps[i] == ActionType.AaveWithdraw) {
-                aave.withdraw(
-                    address(investmentToken),
-                    1000 /*amount*/,
-                    address(this)
-                );
+                aave.withdraw(address(USDT), 1000 /*amount*/, address(this));
             } else if (steps[i] == ActionType.GainsDeposit) {
-                gains.deposit(1000 /*amount*/, address(this));
-            } else if (steps[i] == ActionType.GainsConvertToShares) {
-                gains.convertToShares(1000 /*amount*/);
+                gains.deposit(100 * 10 ** 18, address(this));
             } else if (steps[i] == ActionType.GainsWithdrawRequest) {
-                gains.makeWithdrawRequest(1000 /*amount*/, address(this));
+                uint256 gainsTokenBalance = gains.balanceOf(address(this));
+                gains.makeWithdrawRequest(gainsTokenBalance, address(this));
             } else if (steps[i] == ActionType.GainsRedeem) {
-                gains.redeem(1000 /*amount*/, address(this), address(this));
+                uint256 gainsTokenBalance = gains.balanceOf(address(this));
+                gains.redeem(gainsTokenBalance, address(this), address(this));
             } else if (steps[i] == ActionType.GainsEpochForceNewEpoch) {
                 gainsEpoch.forceNewEpoch();
             } else if (steps[i] == ActionType.PrimexDeposit) {
                 primex.deposit(address(this), 0 /*pid*/, 1000 /*amount*/);
             } else if (steps[i] == ActionType.PrimexWithdraw) {
-                primex.withdraw(address(investmentToken), 1000 /*amount*/);
+                primex.withdraw(address(USDC), 1000 /*amount*/);
             }
         }
     }
