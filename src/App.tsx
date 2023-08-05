@@ -11,7 +11,7 @@ import {
   DEFAULT_ENTRYPOINT_ADDRESS,
 } from "@biconomy/account";
 import { IPaymaster, BiconomyPaymaster } from "@biconomy/paymaster";
-import Counter from "./Components/Counter";
+import Counter from "./Components/User";
 import styles from "@/styles/Home.module.css";
 
 const bundler: IBundler = new Bundler({

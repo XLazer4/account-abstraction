@@ -17,7 +17,7 @@ interface Props {
 }
 
 const TotalCountDisplay: React.FC<{ count: number }> = ({ count }) => {
-  return <div>Total Balance is {count}</div>;
+  return <div>DAI Balance is {count}</div>;
 };
 
 const Counter: React.FC<Props> = ({ smartAccount, provider }) => {
@@ -34,10 +34,10 @@ const Counter: React.FC<Props> = ({ smartAccount, provider }) => {
   }, []);
 
   const getBalance = async (isUpdating: boolean) => {
-    const token = new ethers.Contract(DAI, abi, provider);
-    setBalanceContract(contract);
+    const token = new ethers.Contract(DAI, tokenABI, provider);
+    setBalanceContract(token);
     let smartAccountAddress = await smartAccount.getSmartAccountAddress();
-    const currentBalance = await contract.balanceOf(smartAccountAddress);
+    const currentBalance = await token.balanceOf(smartAccountAddress);
     const currentBalanceInEther = ethers.utils.formatEther(currentBalance);
     setBalance(parseFloat(currentBalanceInEther));
     if (isUpdating) {
