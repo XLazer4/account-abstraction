@@ -4,6 +4,14 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+interface ITokenSwap {
+    function swapTokens(
+        address fromTokenAddress,
+        address toTokenAddress,
+        uint256 amount
+    ) external;
+}
+
 interface IAave {
     function supply(
         address asset,
@@ -45,6 +53,7 @@ contract InvestmentVault is Ownable {
     IERC20 constant DAI = IERC20(0x04B2A6E51272c82932ecaB31A5Ab5aC32AE168C3);
     IERC20 constant USDT = IERC20(0xAcDe43b9E5f72a4F554D4346e69e8e7AC8F352f0);
     IERC20 constant USDC = IERC20(0x19D66Abd20Fb2a0Fc046C139d5af1e97F09A695e);
+    ITokenSwap immutable tokenSwap;
     IAave constant aave = IAave(0x0b913A76beFF3887d35073b8e5530755D60F78C7);
     IGains constant gains = IGains(0x5215C8B3e76D493c8bcb9A7352F7afe18A6bb091);
     IGainsEpoch constant gainsEpoch =
@@ -71,6 +80,10 @@ contract InvestmentVault is Ownable {
     error ExceedsInvestorLimit();
     error InsufficientInvestorBalance();
     error TokenTransferFailed();
+
+    constructor(address _tokenSwap) {
+        tokenSwap = ITokenSwap(_tokenSwap);
+    }
 
     function deposit(address tokenAddress, uint256 _amount) public {
         IERC20 token;
