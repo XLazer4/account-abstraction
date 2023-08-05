@@ -150,10 +150,12 @@ contract InvestmentVault is Ownable {
         }
         for (uint256 i = 0; i < steps.length; i++) {
             if (steps[i] == ActionType.AaveSupply) {
-                aave.supply(address(USDT), 1000 /*amount*/, address(this), 0);
+                USDT.approve(address(aave), 100 * 10 ** 6);
+                aave.supply(address(USDT), 100 * 10 ** 6, address(this), 0);
             } else if (steps[i] == ActionType.AaveWithdraw) {
-                aave.withdraw(address(USDT), 1000 /*amount*/, address(this));
+                aave.withdraw(address(USDT), 100 * 10 ** 6, address(this));
             } else if (steps[i] == ActionType.GainsDeposit) {
+                DAI.approve(address(gains), 100 * 10 ** 18);
                 gains.deposit(100 * 10 ** 18, address(this));
             } else if (steps[i] == ActionType.GainsWithdrawRequest) {
                 uint256 gainsTokenBalance = gains.balanceOf(address(this));
