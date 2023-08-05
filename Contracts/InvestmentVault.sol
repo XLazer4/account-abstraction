@@ -110,13 +110,46 @@ contract InvestmentVault is Ownable {
         investors[msg.sender].vaultManagers[_vaultManager] = false;
     }
 
-    function useFunds(address investorAddress, uint256 _amount) public {
+    function executeInvestmentPlan(
+        address investorAddress,
+        uint256 _amount,
+        ActionType[] memory steps
+    ) public {
         if (!investors[investorAddress].vaultManagers[msg.sender]) {
             revert UnauthorizedVaultManager();
         }
-
         if (investors[investorAddress].amountAllowed < _amount) {
             revert ExceedsInvestorLimit();
+        }
+        for (uint256 i = 0; i < steps.length; i++) {
+            if (steps[i] == ActionType.AaveSupply) {
+                aave.supply(
+                    address(investmentToken),
+                    1000 /*amount*/,
+                    address(this),
+                    0
+                );
+            } else if (steps[i] == ActionType.AaveWithdraw) {
+                aave.withdraw(
+                    address(investmentToken),
+                    1000 /*amount*/,
+                    address(this)
+                );
+            } else if (steps[i] == ActionType.GainsDeposit) {
+                gains.deposit(1000 /*amount*/, address(this));
+            } else if (steps[i] == ActionType.GainsConvertToShares) {
+                gains.convertToShares(1000 /*amount*/);
+            } else if (steps[i] == ActionType.GainsWithdrawRequest) {
+                gains.makeWithdrawRequest(1000 /*amount*/, address(this));
+            } else if (steps[i] == ActionType.GainsRedeem) {
+                gains.redeem(1000 /*amount*/, address(this), address(this));
+            } else if (steps[i] == ActionType.GainsEpochForceNewEpoch) {
+                gainsEpoch.forceNewEpoch();
+            } else if (steps[i] == ActionType.PrimexDeposit) {
+                primex.deposit(address(this), 0 /*pid*/, 1000 /*amount*/);
+            } else if (steps[i] == ActionType.PrimexWithdraw) {
+                primex.withdraw(address(investmentToken), 1000 /*amount*/);
+            }
         }
     }
 }
