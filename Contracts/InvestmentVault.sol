@@ -92,12 +92,22 @@ contract InvestmentVault is Ownable {
         investors[msg.sender].balances[tokenAddress] += _amount;
     }
 
-    function withdraw(uint256 _amount) public {
-        if (investors[msg.sender].balance < _amount) {
+    function withdraw(address tokenAddress, uint256 _amount) public {
+        if (
+            !(tokenAddress == address(DAI) ||
+                tokenAddress == address(USDT) ||
+                tokenAddress == address(USDC))
+        ) {
+            revert InvalidToken();
+        }
+
+        if (investors[msg.sender].balances[tokenAddress] < _amount) {
             revert InsufficientInvestorBalance();
         }
-        investors[msg.sender].balance -= _amount;
-        if (!investmentToken.transfer(msg.sender, _amount)) {
+
+        investors[msg.sender].balances[tokenAddress] -= _amount;
+
+        if (!IERC20(tokenAddress).transfer(msg.sender, _amount)) {
             revert TokenTransferFailed();
         }
     }
