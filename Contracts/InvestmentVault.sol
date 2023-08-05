@@ -37,12 +37,15 @@ interface IPrimex {
 
 contract InvestmentVault is Ownable {
     struct Investor {
-        uint256 balance;
         uint256 amountAllowed;
+        mapping(address => uint256) balances;
         mapping(address => bool) vaultManagers;
     }
 
-    IERC20 public investmentToken;
+    IERC20 constant DAI = "0x04B2A6E51272c82932ecaB31A5Ab5aC32AE168C3";
+    IERC20 constant USDT = "0xAcDe43b9E5f72a4F554D4346e69e8e7AC8F352f0";
+    IERC20 constant USDC = "0x19D66Abd20Fb2a0Fc046C139d5af1e97F09A695e";
+
     IAave public aave;
     IGains public gains;
     IGainsEpoch public gainsEpoch;
@@ -61,31 +64,42 @@ contract InvestmentVault is Ownable {
         PrimexWithdraw
     }
 
+    error InvalidToken();
     error UnauthorizedVaultManager();
     error ExceedsInvestorLimit();
     error InsufficientInvestorBalance();
-    error TokenTransferFailed();
+    error TokenTransferFailed()
 
     constructor(
-        IERC20 _investmentToken,
         address _aave,
         address _gains,
         address _gainsEpoch,
         address _primex
     ) {
-        investmentToken = _investmentToken;
         aave = IAave(_aave);
         gains = IGains(_gains);
         gainsEpoch = IGainsEpoch(_gainsEpoch);
         primex = IPrimex(_primex);
     }
 
-    function deposit(uint256 _amount) public {
-        if (!investmentToken.transferFrom(msg.sender, address(this), _amount)) {
+    function deposit(address tokenAddress, uint256 _amount) public {
+        IERC20 token;
+
+        if (tokenAddress == address(DAI)) {
+            token = DAI;
+        } else if (tokenAddress == address(USDT)) {
+            token = USDT;
+        } else if (tokenAddress == address(USDC)) {
+            token = USDC;
+        } else {
+            revert InvalidToken();
+        }
+
+        if (!token.transferFrom(msg.sender, address(this), _amount)) {
             revert TokenTransferFailed();
         }
 
-        investors[msg.sender].balance += _amount;
+        investors[msg.sender].balances[tokenAddress] += _amount;
     }
 
     function withdraw(uint256 _amount) public {
