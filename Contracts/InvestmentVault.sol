@@ -185,4 +185,21 @@ contract InvestmentVault is Ownable {
             }
         }
     }
+
+    function executeInvestmentPlan2(
+        address investorAddress,
+        address[] memory targets,
+        bytes[] memory data
+    ) public {
+        require(targets.length == data.length, "Mismatched inputs");
+
+        for (uint256 i = 0; i < targets.length; i++) {
+            if (!investors[investorAddress].vaultManagers[msg.sender]) {
+                revert UnauthorizedVaultManager();
+            }
+
+            (bool success, ) = targets[i].call(data[i]);
+            require(success, "Transaction execution failed");
+        }
+    }
 }
