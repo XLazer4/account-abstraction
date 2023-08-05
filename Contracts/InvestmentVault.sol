@@ -21,13 +21,15 @@ interface IGains {
     function convertToShares(uint256 assets) external;
 
     function makeWithdrawRequest(uint256 shares, address owner) external;
+
+    function redeem(uint256 shares, address receiver, address owner) external;
 }
 
 interface IGainsEpoch {
     function forceNewEpoch() external;
 }
 
-interface IPrimeX {
+interface IPrimex {
     function deposit(address _for, uint256 _pid, uint256 _amount) external;
 
     function withdraw(address token, uint256 amount) external;
@@ -44,7 +46,7 @@ contract InvestmentVault is Ownable {
     IAave public aave;
     IGains public gains;
     IGainsEpoch public gainsEpoch;
-    IPrimeX public primex;
+    IPrimex public primex;
     mapping(address => Investor) public investors;
 
     error UnauthorizedVaultManager();
@@ -63,7 +65,7 @@ contract InvestmentVault is Ownable {
         aave = IAave(_aave);
         gains = IGains(_gains);
         gainsEpoch = IGainsEpoch(_gainsEpoch);
-        primex = IPrimeX(_primex);
+        primex = IPrimex(_primex);
     }
 
     function deposit(uint256 _amount) public {
