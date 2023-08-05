@@ -166,9 +166,10 @@ contract InvestmentVault is Ownable {
             } else if (steps[i] == ActionType.GainsEpochForceNewEpoch) {
                 gainsEpoch.forceNewEpoch();
             } else if (steps[i] == ActionType.PrimexDeposit) {
-                primex.deposit(address(this), 0 /*pid*/, 1000 /*amount*/);
+                USDC.approve(address(aave), 100 * 10 ** 6);
+                primex.deposit(address(this), 100 * 10 ** 6, 0);
             } else if (steps[i] == ActionType.PrimexWithdraw) {
-                primex.withdraw(address(USDC), 1000 /*amount*/);
+                primex.withdraw(address(this), 100 * 10 ** 6);
             }
         }
     }
