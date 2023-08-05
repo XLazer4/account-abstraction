@@ -49,6 +49,18 @@ contract InvestmentVault is Ownable {
     IPrimex public primex;
     mapping(address => Investor) public investors;
 
+    enum ActionType {
+        AaveSupply,
+        AaveWithdraw,
+        GainsDeposit,
+        GainsConvertToShares,
+        GainsWithdrawRequest,
+        GainsRedeem,
+        GainsEpochForceNewEpoch,
+        PrimexDeposit,
+        PrimexWithdraw
+    }
+
     error UnauthorizedVaultManager();
     error ExceedsInvestorLimit();
     error InsufficientInvestorBalance();
