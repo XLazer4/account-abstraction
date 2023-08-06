@@ -236,6 +236,81 @@ const User: React.FC<Props> = ({ smartAccount, provider }) => {
     }
   };
 
+  const addVaultManager = async () => {
+    try {
+      toast.info("Adding Vault Manager", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+
+      const addVaultManagerTxInterface = new ethers.utils.Interface([
+        "function addVaultManager(address _vaultManager)",
+      ]);
+      const addVaultManagerData = addVaultManagerTxInterface.encodeFunctionData(
+        "addVaultManager",
+        [depositAmount]
+      );
+
+      const addVaultManagerTx = {
+        to: investmentVault,
+        data: addVaultManagerData,
+      };
+
+      let partialUserOp = await smartAccount.buildUserOp([addVaultManagerTx]);
+
+      const biconomyPaymaster =
+        smartAccount.paymaster as IHybridPaymaster<SponsorUserOperationDto>;
+
+      let paymasterServiceData: SponsorUserOperationDto = {
+        mode: PaymasterMode.SPONSORED,
+        // optional params...
+      };
+
+      const paymasterAndDataResponse =
+        await biconomyPaymaster.getPaymasterAndData(
+          partialUserOp,
+          paymasterServiceData
+        );
+      partialUserOp.paymasterAndData =
+        paymasterAndDataResponse.paymasterAndData;
+
+      const userOpResponse = await smartAccount.sendUserOp(partialUserOp);
+      const transactionDetails = await userOpResponse.wait();
+
+      console.log("Transaction Details:", transactionDetails);
+      console.log("Transaction Hash:", userOpResponse.userOpHash);
+
+      toast.success(`Transaction Hash: ${userOpResponse.userOpHash}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    } catch (error) {
+      console.error("Error executing transaction:", error);
+      toast.error("Error occurred, check the console", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    }
+  };
+
   return (
     <>
       <TotalCountDisplay count={balance} />
@@ -262,6 +337,7 @@ const User: React.FC<Props> = ({ smartAccount, provider }) => {
       <button onClick={() => deposit()}>Deposit Token</button>
       <button onClick={() => withdraw()}>Withdraw Token</button>
       <button onClick={() => getBalance(true)}>Refresh Balance</button>
+      <button onClick={() => addVaultManager()}>Add Vault Manager</button>
     </>
   );
 };
