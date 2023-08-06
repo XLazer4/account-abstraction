@@ -16,6 +16,18 @@ interface Props {
   provider: any;
 }
 
+enum Actions {
+  TokenSwap,
+  AaveSupply,
+  AaveWithdraw,
+  GainsDeposit,
+  GainsWithdrawRequest,
+  GainsEpochForceNewEpoch,
+  GainsRedeem,
+  PrimexDeposit,
+  PrimexWithdraw,
+}
+
 const VaultManager: React.FC<Props> = ({ smartAccount, provider }) => {
   const [DAIBalance, setDAIBalance] = useState<number>(0);
   const [USDTBalance, setUSDTBalance] = useState<number>(0);
@@ -42,6 +54,16 @@ const VaultManager: React.FC<Props> = ({ smartAccount, provider }) => {
     setIsLoading(true);
     getBalance(false);
   }, []);
+
+  function renderActions() {
+    return Object.keys(Actions)
+      .filter((action) => isNaN(Number(action)))
+      .map((action, index) => (
+        <div key={index}>
+          {action} - {Actions[action as keyof typeof Actions]}
+        </div>
+      ));
+  }
 
   const getBalance = async (isUpdating: boolean) => {
     const DAIToken = new ethers.Contract(DAI, tokenABI, provider);
@@ -201,6 +223,11 @@ const VaultManager: React.FC<Props> = ({ smartAccount, provider }) => {
         pauseOnHover
         theme="dark"
       />
+      <br></br>
+      <div>
+        <h3>Actions:</h3>
+        {renderActions()}
+      </div>
       <br></br>
       <input
         type="text"
