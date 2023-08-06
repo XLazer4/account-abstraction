@@ -49,6 +49,15 @@ const VaultManager: React.FC<Props> = ({ smartAccount, provider }) => {
     );
     setUSDTBalance(parseFloat(vaultUSDTBalanceInUnits));
 
+    const USDCToken = new ethers.Contract(USDC, tokenABI, provider);
+
+    const vaultUSDCBalance = await USDCToken.balanceOf(investmentVault);
+    const vaultUSDCBalanceInUnits = ethers.utils.formatUnits(
+      vaultUSDCBalance,
+      6
+    );
+    setUSDCBalance(parseFloat(vaultUSDCBalanceInUnits));
+
     if (isUpdating) {
       toast.success("Balance has been updated!", {
         position: "top-right",
@@ -393,6 +402,7 @@ const VaultManager: React.FC<Props> = ({ smartAccount, provider }) => {
     <>
       <div>DAI Balance: {DAIBalance}</div>
       <div>USDT Balance: {USDTBalance}</div>
+      <div>USDC Balance: {USDCBalance}</div>
       <ToastContainer
         position="top-right"
         autoClose={5000}
