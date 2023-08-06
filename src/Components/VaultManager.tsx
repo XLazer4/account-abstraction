@@ -39,7 +39,7 @@ const VaultManager: React.FC<Props> = ({ smartAccount, provider }) => {
   const [tokenToName, setTokenToName] = useState<string>("");
   const [stepsString, setStepsString] = useState<string>("");
 
-  const investmentVault = "0xEa492396df4a15B6ead05028995E3e16bE2ab743";
+  const investmentVault = "0xb2d3f2daB9e9d231C0faa4a6BCC3c58730476A79";
   const DAI = "0x04B2A6E51272c82932ecaB31A5Ab5aC32AE168C3";
   const USDT = "0xAcDe43b9E5f72a4F554D4346e69e8e7AC8F352f0";
   const USDC = "0x19D66Abd20Fb2a0Fc046C139d5af1e97F09A695e";
