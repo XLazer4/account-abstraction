@@ -1,17 +1,25 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 interface IERC20WithDecimals is IERC20 {
     function decimals() external view returns (uint8);
 }
 
-contract TokenSwap is Ownable {
+contract TokenSwap is Ownable, ReentrancyGuard {
     IERC20WithDecimals public token1;
     IERC20WithDecimals public token2;
     IERC20WithDecimals public token3;
+
+    event TokensSwapped(
+        address indexed fromToken,
+        address indexed toToken,
+        address indexed user,
+        uint256 amount
+    );
 
     error TransferFailed(address token);
     error InvalidTokenAddress(address token);
@@ -22,35 +30,22 @@ contract TokenSwap is Ownable {
         token3 = IERC20WithDecimals(_token3);
     }
 
-    function getDecimals(address tokenAddress) public view returns (uint8) {
+    function getDecimals(address tokenAddress) internal view returns (uint8) {
         IERC20WithDecimals token = IERC20WithDecimals(tokenAddress);
         return token.decimals();
     }
 
-    function refund() public onlyOwner {
-        uint256 balance;
-        balance = token1.balanceOf(address(this));
-        if (balance > 0) {
-            if (!token1.transfer(msg.sender, balance))
-                revert TransferFailed(address(token1));
-        }
-        balance = token2.balanceOf(address(this));
-        if (balance > 0) {
-            if (!token2.transfer(msg.sender, balance))
-                revert TransferFailed(address(token2));
-        }
-        balance = token3.balanceOf(address(this));
-        if (balance > 0) {
-            if (!token3.transfer(msg.sender, balance))
-                revert TransferFailed(address(token3));
-        }
+    function refund() external onlyOwner {
+        _refundToken(token1);
+        _refundToken(token2);
+        _refundToken(token3);
     }
 
     function swapTokens(
         address fromTokenAddress,
         address toTokenAddress,
         uint256 amount
-    ) public {
+    ) external {
         if (
             fromTokenAddress != address(token1) &&
             fromTokenAddress != address(token2) &&
@@ -84,5 +79,20 @@ contract TokenSwap is Ownable {
 
         if (!toToken.transfer(msg.sender, realAmount))
             revert TransferFailed(toTokenAddress);
+
+        emit TokensSwapped(
+            fromTokenAddress,
+            toTokenAddress,
+            msg.sender,
+            amount
+        );
+    }
+
+    function _refundToken(IERC20WithDecimals token) internal {
+        uint256 balance = token.balanceOf(address(this));
+        if (balance > 0) {
+            if (!token.transfer(msg.sender, balance))
+                revert TransferFailed(address(token));
+        }
     }
 }

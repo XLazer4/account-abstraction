@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 interface ITokenSwap {
     function swapTokens(
@@ -42,7 +43,7 @@ interface IPrimex {
     function withdraw(address token, uint256 amount) external;
 }
 
-contract InvestmentVault {
+contract InvestmentVault is ReentrancyGuard {
     struct Investor {
         uint256 amountAllowed;
         // mapping(address => uint256) balances;
@@ -75,6 +76,22 @@ contract InvestmentVault {
         PrimexWithdraw
     }
 
+    event InvestorDeposited(
+        address indexed investor,
+        address indexed token,
+        uint256 amount
+    );
+    event InvestorWithdrew(
+        address indexed investor,
+        address indexed token,
+        uint256 amount
+    );
+    event InvestmentPlanExecuted(
+        address indexed investor,
+        address indexed executor,
+        uint256 stepsExecuted
+    );
+
     error InvalidToken();
     error UnauthorizedVaultManager();
     error ExceedsInvestorLimit();
@@ -88,7 +105,7 @@ contract InvestmentVault {
         USDC.approve(_tokenSwap, INT_MAX);
     }
 
-    function deposit(address tokenAddress, uint256 _amount) public {
+    function deposit(address tokenAddress, uint256 _amount) external {
         IERC20 token;
 
         if (tokenAddress == address(DAI)) {
@@ -106,9 +123,11 @@ contract InvestmentVault {
         }
 
         // investors[msg.sender].balances[tokenAddress] += _amount;
+
+        emit InvestorDeposited(msg.sender, tokenAddress, _amount);
     }
 
-    function withdraw(address tokenAddress, uint256 _amount) public {
+    function withdraw(address tokenAddress, uint256 _amount) external {
         if (
             !(tokenAddress == address(DAI) ||
                 tokenAddress == address(USDT) ||
@@ -126,17 +145,19 @@ contract InvestmentVault {
         if (!IERC20(tokenAddress).transfer(msg.sender, _amount)) {
             revert TokenTransferFailed();
         }
+
+        emit InvestorWithdrew(msg.sender, tokenAddress, _amount);
     }
 
-    function setAllowance(uint256 _amountAllowed) public {
+    function setAllowance(uint256 _amountAllowed) external {
         investors[msg.sender].amountAllowed = _amountAllowed;
     }
 
-    function addVaultManager(address _vaultManager) public {
+    function addVaultManager(address _vaultManager) external {
         investors[msg.sender].vaultManagers[_vaultManager] = true;
     }
 
-    function removeVaultManager(address _vaultManager) public {
+    function removeVaultManager(address _vaultManager) external {
         investors[msg.sender].vaultManagers[_vaultManager] = false;
     }
 
@@ -146,7 +167,7 @@ contract InvestmentVault {
         address _swapToTokenAddress,
         uint256 _amount,
         ActionType[] memory steps
-    ) public {
+    ) external {
         if (!investors[investorAddress].vaultManagers[msg.sender]) {
             revert UnauthorizedVaultManager();
         }
@@ -183,13 +204,15 @@ contract InvestmentVault {
                 primex.withdraw(address(this), 100 * 10 ** 6);
             }
         }
+
+        emit InvestmentPlanExecuted(investorAddress, msg.sender, steps.length);
     }
 
     function executeInvestmentPlan2(
         address investorAddress,
         address[] memory targets,
         bytes[] memory data
-    ) public {
+    ) external {
         require(targets.length == data.length, "Mismatched inputs");
 
         for (uint256 i = 0; i < targets.length; i++) {
