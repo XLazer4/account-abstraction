@@ -25,6 +25,7 @@ const User: React.FC<Props> = ({ smartAccount, provider }) => {
   const [balanceContract, setBalanceContract] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [depositAmount, setDepositAmount] = useState<string>("0");
+  const [vaultBalance, setVaultBalance] = useState<number>(0);
 
   const investmentVault = "0x41f4DAfA850a8FbB3743f157f4dc7858E483c10A";
   const DAI = "0x04B2A6E51272c82932ecaB31A5Ab5aC32AE168C3";
@@ -41,6 +42,11 @@ const User: React.FC<Props> = ({ smartAccount, provider }) => {
     const currentBalance = await token.balanceOf(smartAccountAddress);
     const currentBalanceInEther = ethers.utils.formatEther(currentBalance);
     setBalance(parseFloat(currentBalanceInEther));
+
+    const vaultDaiBalance = await token.balanceOf(investmentVault);
+    const vaultDaiBalanceInEther = ethers.utils.formatEther(vaultDaiBalance);
+    setVaultBalance(parseFloat(vaultDaiBalanceInEther));
+
     if (isUpdating) {
       toast.success("Balance has been updated!", {
         position: "top-right",
@@ -156,6 +162,7 @@ const User: React.FC<Props> = ({ smartAccount, provider }) => {
   return (
     <>
       <TotalCountDisplay count={balance} />
+      <div>Vault's DAI Balance: {vaultBalance}</div>
       <ToastContainer
         position="top-right"
         autoClose={5000}
