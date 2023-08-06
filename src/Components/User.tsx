@@ -27,7 +27,7 @@ const User: React.FC<Props> = ({ smartAccount, provider }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [depositAmount, setDepositAmount] = useState<string>("0");
 
-  const investmentVault = "0xE621603D381a7bb04242Ea7a60268BD12333a005";
+  const investmentVault = "0xEa492396df4a15B6ead05028995E3e16bE2ab743";
   const DAI = "0x04B2A6E51272c82932ecaB31A5Ab5aC32AE168C3";
 
   useEffect(() => {
