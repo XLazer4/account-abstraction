@@ -261,6 +261,7 @@ const User: React.FC<Props> = ({ smartAccount, provider }) => {
       <br></br>
       <button onClick={() => deposit()}>Deposit Token</button>
       <button onClick={() => withdraw()}>Withdraw Token</button>
+      <button onClick={() => getBalance(true)}>Refresh Balance</button>
     </>
   );
 };
