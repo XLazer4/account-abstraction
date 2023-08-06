@@ -311,6 +311,82 @@ const User: React.FC<Props> = ({ smartAccount, provider }) => {
     }
   };
 
+  const setAllowance = async () => {
+    try {
+      toast.info("Setting allowance on the blockchain!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+
+      const setAllowanceInterface = new ethers.utils.Interface([
+        "function setAllowance(uint256 _amountAllowed)",
+      ]);
+      const parsedDepositAmount = parseInt(depositAmount);
+      const setAllowanceData = setAllowanceInterface.encodeFunctionData(
+        "setAllowance",
+        [parsedDepositAmount]
+      );
+
+      const setAllowanceDataTx = {
+        to: investmentVault,
+        data: setAllowanceData,
+      };
+
+      let partialUserOp = await smartAccount.buildUserOp([setAllowanceDataTx]);
+
+      const biconomyPaymaster =
+        smartAccount.paymaster as IHybridPaymaster<SponsorUserOperationDto>;
+
+      let paymasterServiceData: SponsorUserOperationDto = {
+        mode: PaymasterMode.SPONSORED,
+        // optional params...
+      };
+
+      const paymasterAndDataResponse =
+        await biconomyPaymaster.getPaymasterAndData(
+          partialUserOp,
+          paymasterServiceData
+        );
+      partialUserOp.paymasterAndData =
+        paymasterAndDataResponse.paymasterAndData;
+
+      const userOpResponse = await smartAccount.sendUserOp(partialUserOp);
+      const transactionDetails = await userOpResponse.wait();
+
+      console.log("Transaction Details:", transactionDetails);
+      console.log("Transaction Hash:", userOpResponse.userOpHash);
+
+      toast.success(`Transaction Hash: ${userOpResponse.userOpHash}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    } catch (error) {
+      console.error("Error executing transaction:", error);
+      toast.error("Error occurred, check the console", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    }
+  };
+
   return (
     <>
       <TotalCountDisplay count={balance} />
@@ -338,6 +414,7 @@ const User: React.FC<Props> = ({ smartAccount, provider }) => {
       <button onClick={() => withdraw()}>Withdraw Token</button>
       <button onClick={() => getBalance(true)}>Refresh Balance</button>
       <button onClick={() => addVaultManager()}>Add Vault Manager</button>
+      <button onClick={() => setAllowance()}>Set Allowance</button>
     </>
   );
 };
