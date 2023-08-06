@@ -16,19 +16,17 @@ interface Props {
   provider: any;
 }
 
-const TotalCountDisplay: React.FC<{ count: number }> = ({ count }) => {
-  return <div>User's DAI Balance: {count}</div>;
-};
-
 const VaultManager: React.FC<Props> = ({ smartAccount, provider }) => {
-  const [balance, setBalance] = useState<number>(0);
-  const [vaultBalance, setVaultBalance] = useState<number>(0);
-  const [balanceContract, setBalanceContract] = useState<any>(null);
+  const [DAIBalance, setDAIBalance] = useState<number>(0);
+  const [USDTBalance, setUSDTBalance] = useState<number>(0);
+  const [USDCBalance, setUSDCBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [depositAmount, setDepositAmount] = useState<string>("0");
 
   const investmentVault = "0xE621603D381a7bb04242Ea7a60268BD12333a005";
   const DAI = "0x04B2A6E51272c82932ecaB31A5Ab5aC32AE168C3";
+  const USDT = "0xAcDe43b9E5f72a4F554D4346e69e8e7AC8F352f0";
+  const USDC = "0x19D66Abd20Fb2a0Fc046C139d5af1e97F09A695e";
 
   useEffect(() => {
     setIsLoading(true);
@@ -36,16 +34,20 @@ const VaultManager: React.FC<Props> = ({ smartAccount, provider }) => {
   }, []);
 
   const getBalance = async (isUpdating: boolean) => {
-    const token = new ethers.Contract(DAI, tokenABI, provider);
-    setBalanceContract(token);
-    let smartAccountAddress = await smartAccount.getSmartAccountAddress();
-    const currentBalance = await token.balanceOf(smartAccountAddress);
-    const currentBalanceInEther = ethers.utils.formatEther(currentBalance);
-    setBalance(parseFloat(currentBalanceInEther));
+    const DAIToken = new ethers.Contract(DAI, tokenABI, provider);
 
-    const vaultDaiBalance = await token.balanceOf(investmentVault);
+    const vaultDaiBalance = await DAIToken.balanceOf(investmentVault);
     const vaultDaiBalanceInEther = ethers.utils.formatEther(vaultDaiBalance);
-    setVaultBalance(parseFloat(vaultDaiBalanceInEther));
+    setDAIBalance(parseFloat(vaultDaiBalanceInEther));
+
+    const USDTToken = new ethers.Contract(USDT, tokenABI, provider);
+
+    const vaultUSDTBalance = await USDTToken.balanceOf(investmentVault);
+    const vaultUSDTBalanceInUnits = ethers.utils.formatUnits(
+      vaultUSDTBalance,
+      6
+    );
+    setUSDTBalance(parseFloat(vaultUSDTBalanceInUnits));
 
     if (isUpdating) {
       toast.success("Balance has been updated!", {
@@ -389,8 +391,8 @@ const VaultManager: React.FC<Props> = ({ smartAccount, provider }) => {
 
   return (
     <>
-      <TotalCountDisplay count={balance} />
-      <div>Vault's DAI Balance: {vaultBalance}</div>
+      <div>DAI Balance: {DAIBalance}</div>
+      <div>USDT Balance: {USDTBalance}</div>
       <ToastContainer
         position="top-right"
         autoClose={5000}
