@@ -2,7 +2,6 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface ITokenSwap {
     function swapTokens(
@@ -43,7 +42,7 @@ interface IPrimex {
     function withdraw(address token, uint256 amount) external;
 }
 
-contract InvestmentVault is Ownable {
+contract InvestmentVault {
     struct Investor {
         uint256 amountAllowed;
         // mapping(address => uint256) balances;
@@ -133,11 +132,11 @@ contract InvestmentVault is Ownable {
         investors[msg.sender].amountAllowed = _amountAllowed;
     }
 
-    function addVaultManager(address _vaultManager) public onlyOwner {
+    function addVaultManager(address _vaultManager) public {
         investors[msg.sender].vaultManagers[_vaultManager] = true;
     }
 
-    function removeVaultManager(address _vaultManager) public onlyOwner {
+    function removeVaultManager(address _vaultManager) public {
         investors[msg.sender].vaultManagers[_vaultManager] = false;
     }
 

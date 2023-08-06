@@ -405,7 +405,7 @@ const User: React.FC<Props> = ({ smartAccount, provider }) => {
       />
       <br></br>
       <input
-        type="number"
+        type="text"
         value={depositAmount}
         onChange={(e) => setDepositAmount(e.target.value)}
         placeholder="Enter amount"
