@@ -17,15 +17,15 @@ interface Props {
 }
 
 const TotalCountDisplay: React.FC<{ count: number }> = ({ count }) => {
-  return <div>DAI Balance is {count}</div>;
+  return <div>User's DAI Balance: {count}</div>;
 };
 
 const User: React.FC<Props> = ({ smartAccount, provider }) => {
   const [balance, setBalance] = useState<number>(0);
+  const [vaultBalance, setVaultBalance] = useState<number>(0);
   const [balanceContract, setBalanceContract] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [depositAmount, setDepositAmount] = useState<string>("0");
-  const [vaultBalance, setVaultBalance] = useState<number>(0);
 
   const investmentVault = "0x41f4DAfA850a8FbB3743f157f4dc7858E483c10A";
   const DAI = "0x04B2A6E51272c82932ecaB31A5Ab5aC32AE168C3";
@@ -159,6 +159,83 @@ const User: React.FC<Props> = ({ smartAccount, provider }) => {
     }
   };
 
+  const withdraw = async () => {
+    try {
+      toast.info("Processing withdrawal on the blockchain!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+
+      const withdrawTxInterface = new ethers.utils.Interface([
+        "function withdraw(address tokenAddress, uint256 _amount)",
+      ]);
+      const withdrawData = withdrawTxInterface.encodeFunctionData("withdraw", [
+        DAI,
+        ethers.utils.parseEther(depositAmount),
+      ]);
+
+      const withdrawTx = {
+        to: investmentVault,
+        data: withdrawData,
+      };
+
+      let partialUserOp = await smartAccount.buildUserOp([withdrawTx]);
+
+      const biconomyPaymaster =
+        smartAccount.paymaster as IHybridPaymaster<SponsorUserOperationDto>;
+
+      let paymasterServiceData: SponsorUserOperationDto = {
+        mode: PaymasterMode.SPONSORED,
+        // optional params...
+      };
+
+      const paymasterAndDataResponse =
+        await biconomyPaymaster.getPaymasterAndData(
+          partialUserOp,
+          paymasterServiceData
+        );
+      partialUserOp.paymasterAndData =
+        paymasterAndDataResponse.paymasterAndData;
+
+      const userOpResponse = await smartAccount.sendUserOp(partialUserOp);
+      const transactionDetails = await userOpResponse.wait();
+
+      console.log("Transaction Details:", transactionDetails);
+      console.log("Transaction Hash:", userOpResponse.userOpHash);
+
+      toast.success(`Transaction Hash: ${userOpResponse.userOpHash}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+
+      getBalance(true);
+    } catch (error) {
+      console.error("Error executing transaction:", error);
+      toast.error("Error occurred, check the console", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    }
+  };
+
   return (
     <>
       <TotalCountDisplay count={balance} />
@@ -179,10 +256,11 @@ const User: React.FC<Props> = ({ smartAccount, provider }) => {
         type="number"
         value={depositAmount}
         onChange={(e) => setDepositAmount(e.target.value)}
-        placeholder="Enter deposit amount"
+        placeholder="Enter amount"
       />
       <br></br>
       <button onClick={() => deposit()}>Deposit Token</button>
+      <button onClick={() => withdraw()}>Withdraw Token</button>
     </>
   );
 };
