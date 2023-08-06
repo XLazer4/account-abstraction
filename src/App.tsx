@@ -11,7 +11,8 @@ import {
   DEFAULT_ENTRYPOINT_ADDRESS,
 } from "@biconomy/account";
 import { IPaymaster, BiconomyPaymaster } from "@biconomy/paymaster";
-import Counter from "./Components/User";
+import User from "./Components/User";
+import VaultManager from "./Components/VaultManager";
 import styles from "@/styles/Home.module.css";
 
 const bundler: IBundler = new Bundler({
@@ -32,6 +33,9 @@ export default function Home() {
   const sdkRef = useRef<SocialLogin | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [provider, setProvider] = useState<any>(null);
+  const [userRole, setUserRole] = useState<"user" | "vaultManager" | null>(
+    null
+  );
 
   useEffect(() => {
     let configureLogin: any;
@@ -45,7 +49,7 @@ export default function Home() {
     }
   }, [interval]);
 
-  async function login() {
+  async function login(role: "user" | "vaultManager") {
     if (!sdkRef.current) {
       const socialLoginSDK = new SocialLogin();
       const signature1 = await socialLoginSDK.whitelistUrl(
@@ -66,6 +70,7 @@ export default function Home() {
     } else {
       setupSmartAccount();
     }
+    setUserRole(role);
   }
 
   async function setupSmartAccount() {
@@ -122,13 +127,34 @@ export default function Home() {
     <div>
       <h1> Account Abstraction </h1>
 
-      {!smartAccount && !loading && <button onClick={login}>Login</button>}
+      {!smartAccount && !loading && (
+        <div>
+          <button onClick={() => login("user")}>User</button>
+          <button
+            style={{ marginLeft: "10px" }}
+            onClick={() => login("vaultManager")}
+          >
+            Vault Manager
+          </button>
+        </div>
+      )}
+
       {loading && <p>Loading account details...</p>}
-      {!!smartAccount && (
+
+      {!!smartAccount && userRole === "user" && (
         <div className="buttonWrapper">
-          <h3>Smart account address:</h3>
+          <h3>User Smart account address:</h3>
           <p>{smartAccount.address}</p>
-          <Counter smartAccount={smartAccount} provider={provider} />
+          <User smartAccount={smartAccount} provider={provider} />
+          <button onClick={logout}>Logout</button>
+        </div>
+      )}
+
+      {!!smartAccount && userRole === "vaultManager" && (
+        <div className="buttonWrapper">
+          <h3>Vault Manager Smart account address:</h3>
+          <p>{smartAccount.address}</p>
+          <VaultManager smartAccount={smartAccount} provider={provider} />
           <button onClick={logout}>Logout</button>
         </div>
       )}

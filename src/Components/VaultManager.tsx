@@ -20,7 +20,7 @@ const TotalCountDisplay: React.FC<{ count: number }> = ({ count }) => {
   return <div>User's DAI Balance: {count}</div>;
 };
 
-const User: React.FC<Props> = ({ smartAccount, provider }) => {
+const VaultManager: React.FC<Props> = ({ smartAccount, provider }) => {
   const [balance, setBalance] = useState<number>(0);
   const [vaultBalance, setVaultBalance] = useState<number>(0);
   const [balanceContract, setBalanceContract] = useState<any>(null);
@@ -420,4 +420,4 @@ const User: React.FC<Props> = ({ smartAccount, provider }) => {
   );
 };
 
-export default User;
+export default VaultManager;
